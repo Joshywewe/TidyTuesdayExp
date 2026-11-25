@@ -1,0 +1,63 @@
+---
+title: "College Major TidyTuesday Data Dictionary"
+author: "Josh Sun"
+date: "11/24/2026"
+format: pdf
+execute: 
+  warning: false
+  message: false
+  echo: false
+editor: visual
+---
+
+```{R}
+library(kableExtra)
+library(tidyverse)
+library(tidymodels)
+library(knitr)
+```
+
+```{R}
+#| label: data-dictionary-major-salaries
+#| tbl-cap: "Data dictionary for `ai_salary_majors`"
+
+data_dict <- tribble(
+  ~Variable,                 ~Type,       ~Description,
+  "field_of_study",          "character", "Name of the college major",
+  "broad_field_short",       "character", "Short label for the major's broad field (CIP family)",
+  "median_starting_salary",  "double",    "Median earnings one year after graduation (USD)",
+  "median_salary_4yr",       "double",    "Median earnings four years after graduation (USD); missing for 8 majors",
+  "ai_exposure",             "double",    "How much a major's typical jobs rely on abilities related to common AI applications (standardized; 0 = average occupation, higher = more exposed)",
+  "ai_exposure_language",    "double",    "AI exposure based only on language modeling",
+  "ai_exposure_image",       "double",    "AI exposure based only on image generation",
+  "n_occupations",           "integer",   "Number of occupations the major maps to",
+  "n_graduates",             "double",    "Total graduates with measured earnings one year out"
+)
+
+data_dict |>
+  kable() |>
+  kable_styling(bootstrap_options = c("striped", "condensed"), full_width = FALSE) |>
+  column_spec(1, monospace = TRUE) |>
+  column_spec(3, width = "20em")
+```
+```{R}
+#| label: data-dictionary-occupations
+#| tbl-cap: "Data dictionary for `major_occupations`"
+
+occ_dict <- tribble(
+  ~Variable,               ~Type,       ~Description,
+  "cip4",                  "character", "Four-digit CIP 2020 code for the major; joins to `ai_salary_majors`",
+  "field_of_study",        "character", "Name of the college major",
+  "soc",                   "character", "Six-digit SOC 2018 occupation code",
+  "occupation",            "character", "Occupation title",
+  "ai_exposure",           "double",    "AI exposure for this occupation (standardized; 0 = average occupation, higher = more exposed)",
+  "ai_exposure_language",  "double",    "AI exposure for this occupation based only on language modeling",
+  "ai_exposure_image",     "double",    "AI exposure for this occupation based only on image generation"
+)
+
+occ_dict |>
+  kable() |>
+  kable_styling(bootstrap_options = c("striped", "condensed"), full_width = FALSE) |>
+  column_spec(1, monospace = TRUE) |>
+  column_spec(3, width = "20em")
+```
