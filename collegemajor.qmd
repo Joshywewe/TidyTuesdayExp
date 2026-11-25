@@ -1,0 +1,30 @@
+---
+title: "College Major TidyTuesday Challenge"
+author: "Josh Sun"
+date: "11/24/2026"
+format: pdf
+execute: 
+  warning: false
+  message: false
+  echo: false
+editor: visual
+---
+
+```{R}
+#| label: load-pkg-data
+#| message: false
+
+install.packages("kableExtra")
+library(tidyverse)
+library(tidymodels)
+library(knitr)
+library(kableExtra)
+library(patchwork)
+
+ai_salary_majors <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/main/data/2026/2026-10-20/ai_salary_majors.csv')
+major_occupations <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/main/data/2026/2026-10-20/major_occupations.csv')
+```
+
+```{R}
+glimpse(ai_salary_majors)
+```
