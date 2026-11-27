@@ -28,3 +28,34 @@ major_occupations <- readr::read_csv('https://raw.githubusercontent.com/rfordata
 ```{R}
 glimpse(ai_salary_majors)
 ```
+
+```{R}
+#| label: distribution-visualization
+
+ggplot(ai_salary_majors, aes(x = ai_exposure)) +
+  geom_histogram(binwidth = 0.1, fill = "steelblue", color = "white") +
+  geom_vline(xintercept = 0, linetype = "dashed") +
+  labs(
+    title = "Distribution of AI exposure across majors",
+    x = "AI exposure (how much a major’s typical jobs rely on abilities related 
+    to common AI applications)",
+    y = "Number of majors"
+  ) +
+  theme_minimal()
+
+ggplot(ai_salary_majors, aes(x = median_starting_salary)) +
+  geom_histogram(binwidth = 5000, fill = "steelblue", color = "white") +
+  geom_vline(xintercept = median(ai_salary_majors$median_starting_salary),
+             linetype = "dashed") +
+  scale_x_continuous(labels = scales::label_dollar()) +
+  labs(
+    title = "Distribution of median starting salary across majors",
+    x = "Median salary one year after graduation",
+    y = "Number of majors"
+  ) +
+  theme_minimal()
+```
+```{R}
+#| label: initial-exploration
+
+```
