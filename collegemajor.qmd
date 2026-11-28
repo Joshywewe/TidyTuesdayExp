@@ -155,3 +155,163 @@ exposure, while the engineering and architecture group lean towards image
 exposure. 
 :::
 
+```{R}
+#| label: numeric-edas
+
+eda_lang <- ggplot(ai_salary_majors, aes(x = ai_exposure_language, y = median_starting_salary)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = "lm", se = FALSE, color = "steelblue") +
+  scale_y_continuous(labels = scales::label_dollar(scale = 1e-3, suffix = "k")) +
+  labs(title = "Language exposure", x = "Language exposure", y = "Median starting salary") +
+  theme_minimal()
+
+eda_img <- ggplot(ai_salary_majors, aes(x = ai_exposure_image, y = median_starting_salary)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = "lm", se = FALSE, color = "steelblue") +
+  scale_y_continuous(labels = scales::label_dollar(scale = 1e-3, suffix = "k")) +
+  labs(title = "Image exposure", x = "Image exposure", y = NULL) +
+  theme_minimal()
+
+eda_lang + eda_img
+```
+::: {.callout-note appearance="simple" icon="false"}
+Both exposure predictors look roughly linear with salary, so they don't need 
+transforming. Log transformation do not make sense since they include negative 
+values. Salary is right-skewed, so a log transform of salary might be needed.
+:::
+
+```{R}
+#| label: salary-by-field-eda
+#| fig-cap: "Median starting salary by CIP family, ordered by median salary"
+
+ai_salary_majors |>
+  mutate(broad_field_short = fct_reorder(broad_field_short, 
+                                         median_starting_salary)) |>
+  ggplot(aes(x = median_starting_salary, y = broad_field_short)) +
+  geom_boxplot() +
+  scale_x_continuous(labels = scales::label_dollar(scale = 1e-3, 
+                                                   suffix = "k")) +
+  labs(x = "Median starting salary", y = NULL) +
+  theme_minimal()
+```
+::: {.callout-note appearance="simple" icon="false"}
+Median starting salary varies widely across CIP families, from about 19k to 73k, 
+so CIP field is likely an important predictor.
+:::
+
+```{R}
+#| fig-cap: "Base model with no transformation"
+
+base_model <- lm(median_starting_salary ~ ai_exposure_language + 
+                   ai_exposure_image + broad_field_short,
+                data = ai_salary_majors)
+
+tidy(base_model) |>
+  kable(digits = 3) 
+```
+
+```{R}
+#| fig-cap: "The distribution of residuals is approximately normal"
+augment_base_model <- augment(base_model)
+
+ggplot(augment_base_model, aes(x = .resid)) +
+  geom_histogram() +
+  labs(x = "Residuals",
+       y = "Count",
+       title = "Distribution of Residuals")
+```
+```{R}
+#| fig-cap: "Vertical spread does not appear to be constant"
+ggplot(augment_base_model, aes(x = .fitted, y = .resid)) +
+  geom_point(alpha = 0.8, color = "steelblue") +
+  geom_hline(yintercept = 0) +
+  labs(x = "Fitted Values",
+       y = "Residuals",
+       title = "Residuals vs. Fitted Values")
+```
+
+```{R}
+#| fig-cap: "Vertical spread does not appear to be constant "
+ggplot(augment_base_model, aes(x = ai_exposure_language, y = .resid)) +
+  geom_point(alpha = 0.8, color = "steelblue") +
+  geom_hline(yintercept = 0) +
+  labs(x = "Language Exposure",
+       y = "Residuals",
+       title = "Residuals vs. Language Exposure")
+
+ggplot(augment_base_model, aes(x = ai_exposure_image, y = .resid)) +
+  geom_point(alpha = 0.8, color = "steelblue") +
+  geom_hline(yintercept = 0) +
+  labs(x = "Image Exposure",
+       y = "Residuals",
+       title = "Residuals vs. Image Exposure")
+```
+::: {.callout-note appearance="simple" icon="false"}
+Since the vertical spread for all of the residual plots appear to be
+non-constant, a log transformation on response should be considered
+:::
+
+```{R}
+log_fit <- lm(log(median_starting_salary) ~ ai_exposure_language + 
+                ai_exposure_image + broad_field_short, data = ai_salary_majors)
+
+tidy(log_fit) |>
+  kable(digits = 3)
+```
+
+```{R}
+#| fig-cap: "Distribution of residuals appear approximately normal"
+augment_log_fit <- augment(log_fit)
+
+ggplot(augment_log_fit, aes(x = .resid)) +
+  geom_histogram() +
+  labs(x = "Residuals",
+       y = "Count",
+       title = "Distribution of Residuals (Log Model)")
+
+ggplot(augment_log_fit, aes(sample = .resid)) +
+  stat_qq() +
+  stat_qq_line() +
+  labs(x = "Theoretical Quantiles",
+       y = "Sample Quantiles",
+       title = "Normal Q-Q Plot of Residuals (Log Model)")
+```
+::: {.callout-note appearance="simple" icon="false"}
+The normal Q-Q plot shows that the residuals follow the line closely in the 
+middle but bend away at both ends, indicating heavier tails than a normal 
+distribution. However, as the bends appear roughly symmetric and given that 
+there are 285 observations, normality can be assumed. 
+:::
+```{R}
+ggplot(augment_log_fit, aes(x = .fitted, y = .resid)) +
+  geom_point(alpha = 0.8, color = "steelblue") +
+  geom_hline(yintercept = 0) +
+  labs(x = "Fitted Values (log salary)",
+       y = "Residuals",
+       title = "Residuals vs. Fitted Values (Log Model)")
+```
+
+```{R}
+ggplot(augment_log_fit, aes(x = ai_exposure_language, y = .resid)) +
+  geom_point(alpha = 0.8, color = "steelblue") +
+  geom_hline(yintercept = 0) +
+  labs(x = "Language Exposure",
+       y = "Residuals",
+       title = "Residuals vs. Language Exposure (Log Model)")
+
+ggplot(augment_log_fit, aes(x = ai_exposure_image, y = .resid)) +
+  geom_point(alpha = 0.8, color = "steelblue") +
+  geom_hline(yintercept = 0) +
+  labs(x = "Image Exposure",
+       y = "Residuals",
+       title = "Residuals vs. Image Exposure (Log Model)")
+```
+::: {.callout-note appearance="simple" icon="false"}
+The vertical spread of residuals is more even compared to the base model, as the 
+residuals no longer fan out at high fitted values. 
+However, residuals are still tightly clustered at low fitted values and most
+spread out in the middle range, so the equal variance condition is only partly 
+met. Since we've only learned log transformation and I've spent way too long
+on this project already, I will just take this model (can't log the predictor 
+since they have negative values).
+:::
