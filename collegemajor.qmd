@@ -56,6 +56,70 @@ ggplot(ai_salary_majors, aes(x = median_starting_salary)) +
   theme_minimal()
 ```
 ```{R}
-#| label: initial-exploration
+#| label: initial-exploration-exposure-salary
+#| fig-cap: "AI exposure vs. median starting salary for 285 majors"
 
+ggplot(ai_salary_majors, aes(x = ai_exposure, y = median_starting_salary)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = "lm", se = FALSE) +
+  scale_y_continuous(labels = scales::label_dollar()) +
+  labs(
+    title = "AI exposure and starting salary across majors",
+    x = "AI exposure (0 = average occupation; higher = more exposed)",
+    y = "Median starting salary"
+  ) 
+```
+::: {.callout-note appearance="simple" icon="false"}
+Across 285 majors, overall AI exposure has essentially no linear relationship 
+with median starting salary. Highly exposed and less exposed majors both span a 
+wide range of pay, but the number of majors that have high exposure to AI is
+significantly higher than the number of majors that do not. 
+:::
+```{R}
+#| label: major-regrouping
+ai_salary_majors <- ai_salary_majors |>
+  mutate(
+    field_group = fct_collapse(
+      broad_field_short,
+      "Engineering & architecture" = c("Engineering", "Engineering Tech", "Architecture"),
+      "Computing & math" = c("Computer Science", "Mathematics & Statistics"),
+      "Natural sciences & agriculture" = c("Biological Sciences", "Physical Sciences", "Science Tech",
+                                           "Agriculture", "Natural Resources"),
+      "Health" = c("Health Professions"),
+      "Business, law & public service" = c("Business", "Legal", "Public Administration", "Homeland Security"),
+      "Social sciences & education" = c("Social Sciences", "Psychology", "Education", "Family & Consumer Sci",
+                                        "Parks & Recreation", "Area & Ethnic Studies", "Library Science"),
+      "Humanities, arts & communication" = c("English", "Foreign Languages", "History", "Philosophy & Religion",
+                                             "Theology & Religion", "Visual & Performing Arts",
+                                             "Communication", "Communications Tech"),
+      "Trades & transportation" = c("Construction Trades", "Mechanic & Repair Tech", "Precision Production",
+                                    "Transportation", "Culinary & Personal Svc", "Military Tech"),
+      "Interdisciplinary" = c("Interdisciplinary")
+    ),
+    field_group = fct_relevel(field_group, "Humanities, arts & communication")
+  )
+```
+::: {.callout-note appearance="simple" icon="false"}
+For graphing 37 facet panels was unreadable, and many families have only 1–4 
+majors, which is too few to show a trend. So for the plots only, I combined the 
+CIP families into 9 broader groups based on the kind of work graduates 
+of each family typically dodo. Fields in the same group should look similar 
+on the plot
+:::
+
+```{R}
+#| label: fig-exposure-salary-by-group
+#| fig-cap: "AI exposure vs. median starting salary within each field group"
+#| fig-width: 10
+#| fig-height: 8
+ggplot(ai_salary_majors, aes(x = ai_exposure, y = median_starting_salary)) +
+  geom_point(alpha = 0.6) +
+  geom_smooth(method = "lm", se = FALSE) +
+  facet_wrap(~ field_group, ncol = 3) +
+  scale_y_continuous(labels = scales::label_dollar(scale = 1e-3, suffix = "k"))+
+  labs(
+    title = "AI exposure vs. starting salary, by field group",
+    x = "AI exposure",
+    y = "Median starting salary"
+  ) 
 ```
