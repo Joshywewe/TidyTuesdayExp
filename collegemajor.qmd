@@ -100,7 +100,7 @@ ai_salary_majors <- ai_salary_majors |>
   )
 ```
 ::: {.callout-note appearance="simple" icon="false"}
-For graphing 37 facet panels was unreadable, and many families have only 1–4 
+For graphing, 37 facet panels was unreadable, and many families have only 1–4 
 majors, which is too few to show a trend. So for the plots only, I combined the 
 CIP families into 9 broader groups based on the kind of work graduates 
 of each family typically dodo. Fields in the same group should look similar 
@@ -108,7 +108,7 @@ on the plot
 :::
 
 ```{R}
-#| label: fig-exposure-salary-by-group
+#| label: exposure-salary-by-group
 #| fig-cap: "AI exposure vs. median starting salary within each field group"
 #| fig-width: 10
 #| fig-height: 8
@@ -123,3 +123,35 @@ ggplot(ai_salary_majors, aes(x = ai_exposure, y = median_starting_salary)) +
     y = "Median starting salary"
   ) 
 ```
+::: {.callout-note appearance="simple" icon="false"}
+For almost all groups, the relationship between AI exposure and starting salary 
+is weak. Most lines are nearly flat or slightly positive, and the points 
+scatter widely around them. However, it is interesting to note that the
+engineering and architecture group appears to have the highest salary level 
+out of all groups. 
+:::
+
+```{R}
+r_lang_img <- cor(ai_salary_majors$ai_exposure_language, 
+                  ai_salary_majors$ai_exposure_image)
+
+ggplot(ai_salary_majors, aes(x = ai_exposure_language, y = ai_exposure_image)) +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "gray") +
+  geom_point(aes(color = field_group), alpha = 0.5, size = 2) +
+  labs(
+    title = "Language and image AI exposure correlation",
+    subtitle = paste0("r = ", round(r_lang_img, 2)),
+    x = "AI Language exposure",
+    y = "AI Image exposure",
+    color = "Major Employment Group"
+  )
+```
+::: {.callout-note appearance="simple" icon="false"}
+The correlation between AI language exposure and AI image exposure is only 0.48,
+indicating that some majors are exposed to one kind significantly more than the
+other. As can be seen from the graph, the humanities, arts, and communication
+group and the social sciences and education group lean towards language 
+exposure, while the engineering and architecture group lean towards image 
+exposure. 
+:::
+
